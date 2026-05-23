@@ -3,176 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>식물 신선도 전자기 유도 측정 시뮬레이터</title>
+    <title>비접촉식 식물 신선도 전자기 유도 시뮬레이터</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
-            background-color: #f0f4f8;
-            padding: 30px;
+            background-color: #f4f7f6;
+            padding: 20px;
             text-align: center;
+            user-select: none;
         }
-        .app-box {
-            max-width: 450px;
+        .app-container {
+            max-width: 850px;
             margin: 0 auto;
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
         }
         h2 { color: #2c3e50; margin-bottom: 5px; }
-        .subtitle { color: #7f8c8d; font-size: 14px; margin-bottom: 25px; }
+        .subtitle { color: #7f8c8d; font-size: 14px; margin-bottom: 20px; }
         
+        /* 제어 패널 */
         .control-panel {
-            text-align: left;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
             background: #f8f9fa;
             padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: left;
         }
-        label { font-weight: bold; display: block; margin-top: 10px; }
-        select, .slider {
+        .control-group { width: 45%; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #34495e; }
+        select, .slider { width: 100%; padding: 8px; font-size: 14px; }
+
+        /* 넓어진 가상 실험실 배경 (실험 테이블) */
+        .workspace {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            font-size: 15px;
-            box-sizing: border-radius;
+            height: 400px;
+            background-color: #eef2f5;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px; /* 모눈종이 스타일 배경 */
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #bdc3c7;
+            margin-bottom: 15px;
         }
-        
-        /* 식물 시각화 구역 */
-        .view-panel {
+
+        /* 1차/2차 코일 내장 유도 측정기 (센서 구역) */
+        .sensor-unit {
+            position: absolute;
+            left: 100px;
+            top: 120px;
+            width: 160px;
             height: 160px;
+            background: radial-gradient(circle, rgba(46,204,113,0.1) 0%, rgba(52,152,219,0.2) 70%);
+            border: 4px double #3498db;
+            border-radius: 50%;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin: 20px 0;
-            background: #eef7ee;
-            border-radius: 10px;
-            border: 1px dashed #27ae60;
+            font-size: 12px;
+            font-weight: bold;
+            color: #2980b9;
+            box-shadow: 0 0 15px rgba(52,152,219,0.3);
         }
-        .plant-image {
-            font-size: 90px;
-            transition: all 0.3s ease;
+        .sensor-core {
+            width: 40px;
+            height: 40px;
+            background: #e74c3c;
+            border-radius: 50%;
+            margin-top: 5px;
+            border: 2px solid #c0392b;
+        }
+
+        /* 드래그 가능한 식물 (과일) 오브젝트 */
+        .draggable-plant {
+            position: absolute;
+            left: 550px; /* 초기 위치 */
+            top: 150px;
+            font-size: 80px;
+            cursor: move;
+            transition: transform 0.1s ease, filter 0.3s ease;
+            z-index: 10;
             display: inline-block;
+            line-height: 1;
         }
-        
-        /* 측정기 구역 */
-        .meter-panel {
+        .draggable-plant:active {
+            transform: scale(1.1); /* 잡았을 때 커지는 효과 */
+        }
+
+        /* 대형 측정 스크린 패널 */
+        .display-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             background: #2c3e50;
             color: #1abc9c;
-            padding: 15px;
+            padding: 15px 25px;
             border-radius: 10px;
             font-family: monospace;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
         }
-        .meter-title { color: #ffffff; font-size: 14px; margin-bottom: 5px; }
-        .meter-value { font-size: 32px; font-weight: bold; }
+        .screen-left { text-align: left; }
+        .screen-right { text-align: right; }
+        .meter-title { color: #ffffff; font-size: 13px; margin-bottom: 3px; letter-spacing: 1px; }
+        .meter-value { font-size: 36px; font-weight: bold; color: #1abc9c; }
+        .status-text { font-size: 15px; font-weight: bold; margin-top: 5px; color: #ecf0f1; }
         
-        .status-text { font-size: 16px; font-weight: bold; margin-top: 15px; }
-        
-        .footer { margin-top: 25px; font-size: 11px; color: #bdc3c7; }
+        .distance-badge {
+            background: #e67e22;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .footer { margin-top: 15px; font-size: 12px; color: #95a5a6; }
     </style>
 </head>
 <body>
 
-<div class="app-box">
-    <h2>식물 신선도 가상 측정기</h2>
-    <div class="subtitle">물리학 전자기 유도 - 생명과학 세포막 융합 탐구</div>
+<div class="app-container">
+    <h2>전자기 유도 기반 식물 신선도 계측기</h2>
+    <div class="subtitle">물리학I 전자기학(Lenz's Law) & 생명과학I 세포막 구조 융합 시뮬레이터</div>
     
     <div class="control-panel">
-        <label>1. 식물 종류 선택</label>
-        <select id="plantType" onchange="runSimulation()">
-            <option value="lettuce">상추 (🥬)</option>
-            <option value="spinach">시금치 (🌿)</option>
-        </select>
+        <div class="control-group">
+            <label>🛒 1. 탐구 대상 선택</label>
+            <select id="plantType" onchange="resetAndRun()">
+                <option value="apple">사과 (🍎)</option>
+                <option value="banana">바나나 (🍌)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>🍂 2. 내부 신선도 설정: <span id="freshText">100</span>%</label>
+            <input type="range" id="freshSlider" class="slider" min="0" max="100" value="100" oninput="runSimulation()">
+        </div>
+    </div>
+    
+    <div class="workspace" id="space">
+        <div class="sensor-unit" id="sensor">
+            <div>탐지 코일 안테나</div>
+            <div>(INDUCTION COIL)</div>
+            <div class="sensor-core"></div>
+        </div>
         
-        <label>2. 신선도 조절: <span id="freshText">100</span>%</label>
-        <input type="range" id="freshSlider" class="slider" min="0" max="100" value="100" oninput="runSimulation()">
+        <div class="draggable-plant" id="plant">🍎</div>
     </div>
     
-    <div class="view-panel">
-        <div id="plantDisplay" class="plant-image">🥬</div>
+    <div class="display-panel">
+        <div class="screen-left">
+            <div class="meter-title">수신 기전력 정밀 측정 장치</div>
+            <div id="emfDisplay" class="meter-value">5.00 V</div>
+        </div>
+        <div class="screen-right">
+            <div id="statusDisplay" class="status-text">세포막 상태: 무결성 정상</div>
+            <div id="distanceDisplay" class="distance-badge">센서 거리: 400 cm</div>
+        </div>
     </div>
     
-    <div class="meter-panel">
-        <div class="meter-title">수신 코일 유도기전력 (MEASURED EMF)</div>
-        <div id="emfDisplay" class="meter-value">5.00 V</div>
-    </div>
-    
-    <div id="statusDisplay" class="status-text" style="color: green;">상태: 매우 신선함 (세포막 무결성 높음)</div>
-    
-    <div class="footer">Hosted on GitHub Pages | 물리 탐구 활동</div>
+    <div class="footer">연구 과제: 비침습적 임피던스 유도 모델링 | Designed for GitHub Pages</div>
 </div>
 
 <script>
-// 슬라이더나 선택창을 움직일 때마다 실행되는 함수
+// 전역 변수 선언 (드래그앤드롭 상태 저장)
+var plant = document.getElementById("plant");
+var space = document.getElementById("space");
+var isDragging = false;
+var startX = 0;
+var startY = 0;
+
+// [드래그앤드롭 구현] 마우스를 눌렀을 때
+plant.addEventListener("mousedown", function(e) {
+    isDragging = true;
+    // 클릭된 시점의 마우스 위치와 식물 위치 간의 오프셋 계산
+    startX = e.clientX - plant.offsetLeft;
+    startY = e.clientY - plant.offsetTop;
+});
+
+// [드래그앤드롭 구현] 마우스를 움직일 때
+document.addEventListener("mousemove", function(e) {
+    if (isDragging == false) return; // 드래그 상태가 아니면 무시
+    
+    // 이동할 좌표 계산
+    var nextX = e.clientX - startX;
+    var nextY = e.clientY - startY;
+    
+    // 실험실 배경(workspace) 밖으로 나가지 못하도록 한계 설정
+    if (nextX < 0) nextX = 0;
+    if (nextX > space.clientWidth - plant.clientWidth) nextX = space.clientWidth - plant.clientWidth;
+    if (nextY < 0) nextY = 0;
+    if (nextY > space.clientHeight - plant.clientHeight) nextY = space.clientHeight - plant.clientHeight;
+    
+    // 식물 위치 실시간 변경
+    plant.style.left = nextX + "px";
+    plant.style.top = nextY + "px";
+    
+    // 위치가 바뀔 때마다 물리 연산 다시 실행
+    runSimulation();
+});
+
+// [드래그앤드롭 구현] 마우스를 뗐을 때
+document.addEventListener("mouseup", function() {
+    isDragging = false;
+});
+
+// 식물 종류가 바뀔 때 초기화하는 함수
+function resetAndRun() {
+    var selectedPlant = document.getElementById("plantType").value;
+    if (selectedPlant == "apple") {
+        plant.innerText = "🍎";
+    } else if (selectedPlant == "banana") {
+        plant.innerText = "🍌";
+    }
+    runSimulation();
+}
+
+// 핵심 물리 법칙 연산 및 화면 업데이트 함수
 function runSimulation() {
-    // 1. HTML 요소에서 입력값 가져오기
-    var plantSelect = document.getElementById("plantType");
-    var selectedPlant = plantSelect.value;
-    
-    var freshSlider = document.getElementById("freshSlider");
-    var freshness = Number(freshSlider.value);
-    
-    // 현재 신선도 % 숫자를 화면에 업데이트
+    var selectedPlant = document.getElementById("plantType").value;
+    var freshness = Number(document.getElementById("freshSlider").value);
     document.getElementById("freshText").innerText = freshness;
     
-    // 2. 기본 변수 정의
-    var plantEmoji = "";
-    var maxEmf = 0;       
-    var lossFactor = 0;   
+    // 1. 센서 코일 중심 좌표 구하기
+    var sensor = document.getElementById("sensor");
+    var sensorX = sensor.offsetLeft + (sensor.clientWidth / 2);
+    var sensorY = sensor.offsetTop + (sensor.clientHeight / 2);
     
-    // 고등학교 수준의 가장 기본적인 if-else 분기문 구조 사용
-    if (selectedPlant == "lettuce") {
-        plantEmoji = "🥬";
-        maxEmf = 5.00;     
-        lossFactor = 0.03; 
-    } else if (selectedPlant == "spinach") {
-        plantEmoji = "🌿";
-        maxEmf = 4.20;     
-        lossFactor = 0.025; 
+    // 2. 현재 식물의 중심 좌표 구하기
+    var plantX = plant.offsetLeft + (plant.clientWidth / 2);
+    var plantY = plant.offsetTop + (plant.clientHeight / 2);
+    
+    // 3. 기하학적 거리 계산 (피타고라스 정리: d = sqrt(dx^2 + dy^2))
+    var dx = plantX - sensorX;
+    var dy = plantY - sensorY;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // 화면 표시용 가상 거리 수치화 (소수점 버림)
+    var displayDist = Math.round(distance);
+    document.getElementById("distanceDisplay").innerText = "센서 거리: " + displayDist + " cm";
+    
+    // 4. 식물별 고유 물리 상수 정의
+    var maxEmf = 0;       // 정상 상태 전압
+    var lossFactor = 0;   // 시들었을 때 감쇄 영향력 계수
+    
+    if (selectedPlant == "apple") {
+        maxEmf = 5.00;
+        lossFactor = 0.028; // 사과의 이온 감쇄 계수
+    } else if (selectedPlant == "banana") {
+        maxEmf = 4.50;
+        lossFactor = 0.022; // 바나나의 이온 감쇄 계수
     }
     
-    // 3. 물리 연산 (신선도가 떨어질수록 이온 유출로 와전류가 강해져 수신 전압 감쇄)
+    // 5. [물리학 모델링] 거리에 따른 자기장 결합도(attenuation factor) 계산
+    // 거리가 가까울수록 1에 가까워지고, 멀어질수록 0에 수렴하는 비선형 공식 적용
+    var coupling = 1 / (1 + (distance * distance / 15000)); 
+    
+    // 6. 최종 전압 계산 (렌츠의 법칙 반영)
+    // 시든 정도(100 - 신선도)가 크고, 결합도(코일과의 거리)가 높을수록 수신 전압이 깎임
     var witheredDegree = 100 - freshness;
-    var totalLoss = lossFactor * witheredDegree;
-    var currentEmf = maxEmf - totalLoss;
+    var maxVoltageLoss = lossFactor * witheredDegree; // 중심 정중앙에 있을 때의 최대 손실
+    var actualLoss = maxVoltageLoss * coupling;       // 거리가 반영된 실제 전압 감쇄량
     
-    // 소수점 둘째자리까지 깔끔하게 정리
-    currentEmf = Math.round(currentEmf * 100) / 100;
+    var finalEmf = maxEmf - actualLoss;
+    finalEmf = Math.round(finalEmf * 100) / 100; // 소수점 둘째자리 정렬
     
-    // 측정기 화면에 결과 반영
-    document.getElementById("emfDisplay").innerText = currentEmf + " V";
+    // 계측기 화면 출력
+    document.getElementById("emfDisplay").innerText = finalEmf.toFixed(2) + " V";
     
-    // 4. 신선도 구간에 따른 식물 형태(CSS) 및 상태 텍스트 변경
-    var plantBox = document.getElementById("plantDisplay");
-    plantBox.innerText = plantEmoji;
-    
-    var statusBox = document.getElementById("statusDisplay");
-    
+    // 7. 신선도 수치에 따른 과일 생물학적 시각 상태 제어 (CSS 필터 및 텍스트)
     if (freshness >= 70) {
-        // 신선한 상태 (정상 모양)
-        plantBox.style.filter = "hue-rotate(0deg) saturate(100%) opacity(100%)";
-        plantBox.style.transform = "rotate(0deg) scale(1)";
-        statusBox.innerText = "상태: 매우 신선함 (세포막 무결성 높음)";
-        statusBox.style.color = "green";
+        plant.style.filter = "hue-rotate(0deg) saturate(100%) opacity(100%)";
+        document.getElementById("statusDisplay").innerText = "세포막 상태: 무결성 유지 (이온 차단)";
+        document.getElementById("statusDisplay").style.color = "#2ecc71";
     } 
     else if (freshness >= 35) {
-        // 보통 상태 (약간 노랗게 변하고 살짝 시듦)
-        plantBox.style.filter = "hue-rotate(-25deg) saturate(75%) opacity(90%)";
-        plantBox.style.transform = "rotate(10deg) scale(0.9)";
-        statusBox.innerText = "상태: 보통 (세포막 일부 손상 / 이온 유출 중)";
-        statusBox.style.color = "orange";
+        // 중간 단계: 서서히 변색 진행
+        var hueValue = selectedPlant == "apple" ? -30 : 20; // 과일 특성별 변색 각도 차별화
+        plant.style.filter = "hue-rotate(" + hueValue + "deg) saturate(70%) opacity(90%)";
+        document.getElementById("statusDisplay").innerText = "세포막 상태: 부분 손상 (이온 유출 중)";
+        document.getElementById("statusDisplay").style.color = "#f1c40f";
     } 
     else {
-        // 시든 상태 (갈색으로 풀이 죽어 쓰러짐)
-        plantBox.style.filter = "hue-rotate(-50deg) saturate(45%) opacity(65%)";
-        plantBox.style.transform = "rotate(25deg) scale(0.8)";
-        statusBox.innerText = "상태: 시듦 (세포막 붕괴 / 내부 와전류 강함)";
-        statusBox.style.color = "red";
+        // 완전히 시든 단계: 어둡고 탁하게 변함
+        var hueValue = selectedPlant == "apple" ? -55 : 40;
+        plant.style.filter = "hue-rotate(" + hueValue + "deg) saturate(40%) opacity(70%)";
+        document.getElementById("statusDisplay").innerText = "세포막 상태: 완전히 망가짐 (와전류 최대)";
+        document.getElementById("statusDisplay").style.color = "#e74c3c";
     }
 }
 
-// 앱이 처음 켜졌을 때 초기 실행
+// 앱 최초 로드 시 초기 연산 구동
 runSimulation();
 </script>
 
