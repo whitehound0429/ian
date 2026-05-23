@@ -3,303 +3,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비접촉식 식물 신선도 전자기 유도 시뮬레이터</title>
+    <title>융합 탐구 가상 실험실 | 비접촉식 세포막 임피던스 계측</title>
     <style>
+        /* 글로벌 스타일 정의 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Malgun Gothic', sans-serif;
-            background-color: #f4f7f6;
-            padding: 20px;
-            text-align: center;
-            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Malgun Gothic';
+            background-color: #f0f4f8;
+            color: #334155;
+            line-height: 1.6;
+            padding-bottom: 60px;
         }
-        .app-container {
-            max-width: 850px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-        }
-        h2 { color: #2c3e50; margin-bottom: 5px; }
-        .subtitle { color: #7f8c8d; font-size: 14px; margin-bottom: 20px; }
-        
-        /* 제어 패널 */
-        .control-panel {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            text-align: left;
-        }
-        .control-group { width: 45%; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; color: #34495e; }
-        select, .slider { width: 100%; padding: 8px; font-size: 14px; }
 
-        /* 넓어진 가상 실험실 배경 (실험 테이블) */
+        /* 네비게이션 헤더 */
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+        header p { color: #94a3b8; font-size: 14px; margin-top: 5px; }
+
+        /* 메인 컨테이너 레이아웃 */
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* 학술 보고서 요약 섹션 카드 */
+        .report-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border-left: 5px solid #3b82f6;
+        }
+        .report-card h3 { color: #1e293b; margin-bottom: 12px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .report-card p { color: #475569; font-size: 14.5px; text-align: justify; }
+        .theory-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .theory-box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .theory-box h4 { font-size: 14px; color: #2563eb; margin-bottom: 5px; }
+        .theory-box ul { font-size: 13px; color: #64748b; padding-left: 18px; }
+
+        /* 가상 실험 장치 섹션 */
+        .lab-section {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .lab-section h3 { font-size: 20px; color: #0f172a; margin-bottom: 20px; text-align: left; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+
+        /* 가로 배치 제어 패널 */
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+            border: 1px dashed #cbd5e1;
+        }
+        label { font-weight: 600; display: block; margin-bottom: 6px; color: #334155; font-size: 13.5px; }
+        .slider { width: 100%; height: 6px; background: #cbd5e1; border-radius: 5px; outline: none; }
+        .fresh-val { font-weight: bold; color: #ef4444; }
+
+        /* 넓고 직관적인 모눈종이 실험대 */
         .workspace {
             width: 100%;
             height: 400px;
-            background-color: #eef2f5;
-            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-            background-size: 20px 20px; /* 모눈종이 스타일 배경 */
-            border-radius: 10px;
+            background-color: #f1f5f9;
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            background-size: 25px 25px;
+            border-radius: 12px;
             position: relative;
             overflow: hidden;
-            border: 2px solid #bdc3c7;
-            margin-bottom: 15px;
+            border: 2px solid #cbd5e1;
+            cursor: crosshair;
         }
 
-        /* 1차/2차 코일 내장 유도 측정기 (센서 구역) */
-        .sensor-unit {
-            position: absolute;
-            left: 100px;
-            top: 120px;
-            width: 160px;
-            height: 160px;
-            background: radial-gradient(circle, rgba(46,204,113,0.1) 0%, rgba(52,152,219,0.2) 70%);
-            border: 4px double #3498db;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: #2980b9;
-            box-shadow: 0 0 15px rgba(52,152,219,0.3);
-        }
-        .sensor-core {
-            width: 40px;
-            height: 40px;
-            background: #e74c3c;
-            border-radius: 50%;
-            margin-top: 5px;
-            border: 2px solid #c0392b;
-        }
+        /* 과일 영역 배치 및 오버레이 효과 */
+        .fruit-zone { position: absolute; width: 140px; height: 140px; display: flex; justify-content: center; align-items: center; }
+        #appleZone { left: 20%; top: 30%; }
+        #bananaZone { right: 20%; top: 30%; }
 
-        /* 드래그 가능한 식물 (과일) 오브젝트 */
-        .draggable-plant {
-            position: absolute;
-            left: 550px; /* 초기 위치 */
-            top: 150px;
-            font-size: 80px;
-            cursor: move;
-            transition: transform 0.1s ease, filter 0.3s ease;
-            z-index: 10;
-            display: inline-block;
+        .fruit-wrapper {
+            position: relative;
+            font-size: 90px;
             line-height: 1;
+            display: inline-block;
+            transition: transform 0.2s, filter 0.2s;
         }
-        .draggable-plant:active {
-            transform: scale(1.1); /* 잡았을 때 커지는 효과 */
+        .decay-overlay {
+            position: absolute;
+            top: 10%; left: 10%; width: 80%; height: 80%;
+            border-radius: 50%;
+            mix-blend-mode: multiply;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .apple-decay {
+            background: radial-gradient(circle, #543615 20%, transparent 25%), radial-gradient(circle, #6e4922 15%, transparent 20%);
+            background-size: 25px 25px; background-position: 0 0, 12px 12px;
+        }
+        .banana-decay {
+            background: radial-gradient(circle, #1f1406 12%, transparent 14%), radial-gradient(circle, #2e1f0c 8%, transparent 10%);
+            background-size: 14px 14px; background-position: 1px 3px, 7px 8px;
         }
 
-        /* 대형 측정 스크린 패널 */
+        /* 센서 크로스헤어 물리 링 */
+        .mouse-probe {
+            position: absolute;
+            width: 34px; height: 34px;
+            border: 2px dashed #3b82f6;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.1);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 100;
+        }
+        .mouse-probe::before { content: ''; position: absolute; top: 15px; left: -4px; width: 38px; height: 2px; background: #3b82f6; }
+        .mouse-probe::after { content: ''; position: absolute; left: 15px; top: -4px; width: 2px; height: 38px; background: #3b82f6; }
+
+        /* 대형 메인 디지털 계측창 */
         .display-panel {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #2c3e50;
-            color: #1abc9c;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-family: monospace;
-            box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: #0f172a;
+            color: #10b981;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+            font-family: 'Courier New', Courier, monospace;
         }
-        .screen-left { text-align: left; }
-        .screen-right { text-align: right; }
-        .meter-title { color: #ffffff; font-size: 13px; margin-bottom: 3px; letter-spacing: 1px; }
-        .meter-value { font-size: 36px; font-weight: bold; color: #1abc9c; }
-        .status-text { font-size: 15px; font-weight: bold; margin-top: 5px; color: #ecf0f1; }
-        
-        .distance-badge {
-            background: #e67e22;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-            display: inline-block;
-            margin-top: 5px;
+        .data-block { text-align: center; border-right: 1px solid #1e293b; }
+        .data-block:last-child { border-right: none; }
+        .data-label { color: #94a3b8; font-size: 12px; margin-bottom: 4px; font-weight: bold; }
+        .data-value { font-size: 36px; font-weight: bold; }
+
+        /* 안내 전광판 */
+        .info-zone {
+            margin-top: 15px; font-size: 13.5px; font-weight: 600; color: #475569;
+            background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;
         }
-        .footer { margin-top: 15px; font-size: 12px; color: #95a5a6; }
+
+        footer { text-align: center; padding: 30px; color: #94a3b8; font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <h2>전자기 유도 기반 식물 신선도 계측기</h2>
-    <div class="subtitle">물리학I 전자기학(Lenz's Law) & 생명과학I 세포막 구조 융합 시뮬레이터</div>
+<header>
+    <h1>전자기 유도 기반 생체 임피던스 분석 가상 실험실</h1>
+    <p>물리학Ⅰ 전자기학(렌츠의 법칙)과 생명과학Ⅰ(세포막 구조)의 정량적 융합 시뮬레이션 모델</p>
+</header>
+
+<div class="container">
     
-    <div class="control-panel">
-        <div class="control-group">
-            <label>🛒 1. 탐구 대상 선택</label>
-            <select id="plantType" onchange="resetAndRun()">
-                <option value="apple">사과 (🍎)</option>
-                <option value="banana">바나나 (🍌)</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label>🍂 2. 내부 신선도 설정: <span id="freshText">100</span>%</label>
-            <input type="range" id="freshSlider" class="slider" min="0" max="100" value="100" oninput="runSimulation()">
+    <div class="report-card">
+        <h3>💡 탐구 요약 및 핵심 메커니즘</h3>
+        <p>
+            본 웹사이트는 식물 세포가 노화 및 부패함에 따라 발생하는 생체막의 물리적 변화를 전자기학적으로 계측하는 시스템을 시뮬레이션합니다. 
+            세포막이 붕괴하면 내부의 전해질 이온이 유출되어 전기 전도도가 급격히 상승합니다. 이때 외부 가변 자기장이 주어지면, 전도도가 높아진 과일 내부에는 강력한 와전류(Eddy Current)가 형성됩니다. 
+            <strong>렌츠의 법칙(Lenz's Law)</strong>에 의해 이 와전류는 최초 자기장을 방해하는 역방향 자기장을 형성하므로, 마우스 프로브(수신 센서)에 도달하는 유도기전력과 계측 전류는 반비례하여 감소하게 됩니다.
+        </p>
+        <div class="theory-grid">
+            <div class="theory-box">
+                <h4>생명과학 변인 (세포막과 이온)</h4>
+                <ul>
+                    <li>신선함 (100%): 세포막 정상 차단 ➔ 자유 이온 적음 ➔ 저항 높음</li>
+                    <li>부패함 (0%): 생체막 분해 무차별 유출 ➔ 이온 농도 급증 ➔ 저항 급감</li>
+                </ul>
+            </div>
+            <div class="theory-box">
+                <h4>물리학 변인 (패러데이 및 렌츠 법칙)</h4>
+                <ul>
+                    <li>식물 내부 와전류량 증가 ➔ 자체 반대방향 자기장 유도</li>
+                    <li>수신 안테나 코일에 감지되는 최종 기전력(V) 및 전류(mA) 감쇄</li>
+                </ul>
+            </div>
         </div>
     </div>
-    
-    <div class="workspace" id="space">
-        <div class="sensor-unit" id="sensor">
-            <div>탐지 코일 안테나</div>
-            <div>(INDUCTION COIL)</div>
-            <div class="sensor-core"></div>
+
+    <div class="lab-section">
+        <h3>🔬 가상 전자기 계측 실험대 (Virtual Testing Bench)</h3>
+        
+        <div class="control-panel">
+            <div>
+                <label>🍎 사과 표면 신선도 조절: <span id="appleText" class="fresh-val">100</span>%</label>
+                <input type="range" id="appleSlider" class="slider" min="0" max="100" value="100" oninput="updateVisualsAndRun()">
+            </div>
+            <div>
+                <label>🍌 바나나 표면 신선도 조절: <span id="bananaText" class="fresh-val">100</span>%</label>
+                <input type="range" id="bananaSlider" class="slider" min="0" max="100" value="100" oninput="updateVisualsAndRun()">
+            </div>
         </div>
         
-        <div class="draggable-plant" id="plant">🍎</div>
-    </div>
-    
-    <div class="display-panel">
-        <div class="screen-left">
-            <div class="meter-title">수신 기전력 정밀 측정 장치</div>
-            <div id="emfDisplay" class="meter-value">5.00 V</div>
+        <div class="workspace" id="workspace" onmousemove="calculatePhysics(event)" onmouseenter="showProbe()" onmouseleave="hideProbe()">
+            <div class="mouse-probe" id="probe"></div>
+            
+            <div class="fruit-zone" id="appleZone">
+                <div class="fruit-wrapper" id="appleImg">🍎
+                    <div class="decay-overlay apple-decay" id="appleDecayLayer"></div>
+                </div>
+            </div>
+            
+            <div class="fruit-zone" id="bananaZone">
+                <div class="fruit-wrapper" id="bananaImg">🍌
+                    <div class="decay-overlay banana-decay" id="bananaDecayLayer"></div>
+                </div>
+            </div>
         </div>
-        <div class="screen-right">
-            <div id="statusDisplay" class="status-text">세포막 상태: 무결성 정상</div>
-            <div id="distanceDisplay" class="distance-badge">센서 거리: 400 cm</div>
+        
+        <div class="display-panel">
+            <div class="data-block">
+                <div class="data-label">수신 유도기전력 (INDUCED EMF)</div>
+                <div id="emfDisplay" class="data-value">5.00 V</div>
+            </div>
+            <div class="data-block">
+                <div class="data-label">수신 계측 전류 (MEASURED CURRENT)</div>
+                <div id="currentDisplay" class="data-value">10.00 mA</div>
+            </div>
+        </div>
+        
+        <div class="info-zone" id="statusMessage">
+            실험 테이블 준비 완료. 마우스 커서(계측기 프로브)를 배치된 과일에 근접시키십시오.
         </div>
     </div>
-    
-    <div class="footer">연구 과제: 비침습적 임피던스 유도 모델링 | Designed for GitHub Pages</div>
+
 </div>
 
+<footer>
+    <p>© 2026 고등학교 물리학 및 생명과학 융합 탐구 활동 | 성찬영 개발</p>
+    <p style="margin-top: 5px; font-size: 11px; color: #cbd5e1;">본 시뮬레이터는 거리 역제곱 법칙 및 이온 전도 감쇄율을 따르는 순수 수리 모델입니다.</p>
+</footer>
+
 <script>
-// 전역 변수 선언 (드래그앤드롭 상태 저장)
-var plant = document.getElementById("plant");
-var space = document.getElementById("space");
-var isDragging = false;
-var startX = 0;
-var startY = 0;
+var baselineEmf = 5.00;
+var baselineCurrent = 10.00;
 
-// [드래그앤드롭 구현] 마우스를 눌렀을 때
-plant.addEventListener("mousedown", function(e) {
-    isDragging = true;
-    // 클릭된 시점의 마우스 위치와 식물 위치 간의 오프셋 계산
-    startX = e.clientX - plant.offsetLeft;
-    startY = e.clientY - plant.offsetTop;
-});
+function showProbe() { document.getElementById("probe").style.display = "block"; }
+function hideProbe() { document.getElementById("probe").style.display = "none"; }
 
-// [드래그앤드롭 구현] 마우스를 움직일 때
-document.addEventListener("mousemove", function(e) {
-    if (isDragging == false) return; // 드래그 상태가 아니면 무시
+// 인터넷 부패 고증 데이터 기반 비주얼 업데이트 함수
+function updateVisualsAndRun() {
+    var appleFresh = Number(document.getElementById("appleSlider").value);
+    var bananaFresh = Number(document.getElementById("bananaSlider").value);
     
-    // 이동할 좌표 계산
-    var nextX = e.clientX - startX;
-    var nextY = e.clientY - startY;
+    document.getElementById("appleText").innerText = appleFresh;
+    document.getElementById("bananaText").innerText = bananaFresh;
     
-    // 실험실 배경(workspace) 밖으로 나가지 못하도록 한계 설정
-    if (nextX < 0) nextX = 0;
-    if (nextX > space.clientWidth - plant.clientWidth) nextX = space.clientWidth - plant.clientWidth;
-    if (nextY < 0) nextY = 0;
-    if (nextY > space.clientHeight - plant.clientHeight) nextY = space.clientHeight - plant.clientHeight;
-    
-    // 식물 위치 실시간 변경
-    plant.style.left = nextX + "px";
-    plant.style.top = nextY + "px";
-    
-    // 위치가 바뀔 때마다 물리 연산 다시 실행
-    runSimulation();
-});
+    // 사과 부패 모델링 (갈변 반점 확산 및 수분 손실 수축)
+    var appleImg = document.getElementById("appleImg");
+    var appleDecay = document.getElementById("appleDecayLayer");
+    var appleWithered = 100 - appleFresh;
+    appleImg.style.filter = "brightness(" + (100 - appleWithered * 0.55) + "%) hue-rotate(-" + (appleWithered * 0.4) + "deg) saturate(" + (100 - appleWithered * 0.25) + "%)";
+    appleDecay.style.opacity = appleWithered / 100;
+    appleImg.style.transform = "scale(" + (1 - appleWithered * 0.0012) + ")";
 
-// [드래그앤드롭 구현] 마우스를 뗐을 때
-document.addEventListener("mouseup", function() {
-    isDragging = false;
-});
+    // 바나나 부패 모델링 (슈가 스폿 확산 및 연화 현상)
+    var bananaImg = document.getElementById("bananaImg");
+    var bananaDecay = document.getElementById("bananaDecayLayer");
+    var bananaWithered = 100 - bananaFresh;
+    bananaImg.style.filter = "brightness(" + (100 - bananaWithered * 0.65) + "%) saturate(" + (100 - bananaWithered * 0.4) + "%)";
+    bananaDecay.style.opacity = (bananaWithered * 1.1) / 100;
+    bananaImg.style.transform = "scale(" + (1 - bananaWithered * 0.001) + ") rotate(" + (bananaWithered * 0.08) + "deg)";
 
-// 식물 종류가 바뀔 때 초기화하는 함수
-function resetAndRun() {
-    var selectedPlant = document.getElementById("plantType").value;
-    if (selectedPlant == "apple") {
-        plant.innerText = "🍎";
-    } else if (selectedPlant == "banana") {
-        plant.innerText = "🍌";
-    }
-    runSimulation();
+    if(window.lastEvent) calculatePhysics(window.lastEvent);
 }
 
-// 핵심 물리 법칙 연산 및 화면 업데이트 함수
-function runSimulation() {
-    var selectedPlant = document.getElementById("plantType").value;
-    var freshness = Number(document.getElementById("freshSlider").value);
-    document.getElementById("freshText").innerText = freshness;
+// 실시간 기하 거리 및 렌츠의 법칙 비선형 감쇄 수리 연산 함수
+function calculatePhysics(event) {
+    window.lastEvent = event;
+    var ws = document.getElementById("workspace");
+    var rect = ws.getBoundingClientRect();
     
-    // 1. 센서 코일 중심 좌표 구하기
-    var sensor = document.getElementById("sensor");
-    var sensorX = sensor.offsetLeft + (sensor.clientWidth / 2);
-    var sensorY = sensor.offsetTop + (sensor.clientHeight / 2);
+    var mouseX = event.clientX - rect.left;
+    var mouseY = event.clientY - rect.top;
     
-    // 2. 현재 식물의 중심 좌표 구하기
-    var plantX = plant.offsetLeft + (plant.clientWidth / 2);
-    var plantY = plant.offsetTop + (plant.clientHeight / 2);
+    var probe = document.getElementById("probe");
+    probe.style.left = mouseX + "px";
+    probe.style.top = mouseY + "px";
     
-    // 3. 기하학적 거리 계산 (피타고라스 정리: d = sqrt(dx^2 + dy^2))
-    var dx = plantX - sensorX;
-    var dy = plantY - sensorY;
-    var distance = Math.sqrt(dx * dx + dy * dy);
+    // 모눈종이 위 좌표 중심값 보정식
+    var appleX = ws.clientWidth * 0.2 + 70;
+    var appleY = ws.clientHeight * 0.3 + 70;
+    var bananaX = ws.clientWidth * 0.8 - 70;
+    var bananaY = ws.clientHeight * 0.3 + 70;
     
-    // 화면 표시용 가상 거리 수치화 (소수점 버림)
-    var displayDist = Math.round(distance);
-    document.getElementById("distanceDisplay").innerText = "센서 거리: " + displayDist + " cm";
+    var dApple = Math.sqrt((mouseX - appleX) * (mouseX - appleX) + (mouseY - appleY) * (mouseY - appleY));
+    var dBanana = Math.sqrt((mouseX - bananaX) * (mouseX - bananaX) + (mouseY - bananaY) * (mouseY - bananaY));
     
-    // 4. 식물별 고유 물리 상수 정의
-    var maxEmf = 0;       // 정상 상태 전압
-    var lossFactor = 0;   // 시들었을 때 감쇄 영향력 계수
+    var appleFresh = Number(document.getElementById("appleSlider").value);
+    var bananaFresh = Number(document.getElementById("bananaSlider").value);
+    var appleWithered = 100 - appleFresh;
+    var bananaWithered = 100 - bananaFresh;
     
-    if (selectedPlant == "apple") {
-        maxEmf = 5.00;
-        lossFactor = 0.028; // 사과의 이온 감쇄 계수
-    } else if (selectedPlant == "banana") {
-        maxEmf = 4.50;
-        lossFactor = 0.022; // 바나나의 이온 감쇄 계수
-    }
+    // 공간 전자기 결합 계수 (거리 역제곱 기반 감쇄 분기)
+    var appleCoupling = 1 / (1 + (dApple * dApple / 5500));
+    var bananaCoupling = 1 / (1 + (dBanana * dBanana / 5500));
     
-    // 5. [물리학 모델링] 거리에 따른 자기장 결합도(attenuation factor) 계산
-    // 거리가 가까울수록 1에 가까워지고, 멀어질수록 0에 수렴하는 비선형 공식 적용
-    var coupling = 1 / (1 + (distance * distance / 15000)); 
+    // 손실률 연산 (반대 자기장 상쇄 필드 형성량 계산)
+    var appleLossEmf = appleWithered * 0.024 * appleCoupling;
+    var appleLossCurrent = appleWithered * 0.048 * appleCoupling;
+    var bananaLossEmf = bananaWithered * 0.021 * bananaCoupling;
+    var bananaLossCurrent = bananaWithered * 0.042 * bananaCoupling;
     
-    // 6. 최종 전압 계산 (렌츠의 법칙 반영)
-    // 시든 정도(100 - 신선도)가 크고, 결합도(코일과의 거리)가 높을수록 수신 전압이 깎임
-    var witheredDegree = 100 - freshness;
-    var maxVoltageLoss = lossFactor * witheredDegree; // 중심 정중앙에 있을 때의 최대 손실
-    var actualLoss = maxVoltageLoss * coupling;       // 거리가 반영된 실제 전압 감쇄량
+    var finalEmf = baselineEmf - (appleLossEmf + bananaLossEmf);
+    var finalCurrent = baselineCurrent - (appleLossCurrent + bananaLossCurrent);
     
-    var finalEmf = maxEmf - actualLoss;
-    finalEmf = Math.round(finalEmf * 100) / 100; // 소수점 둘째자리 정렬
+    if (finalEmf < 0.15) finalEmf = 0.15;
+    if (finalCurrent < 0.3) finalCurrent = 0.3;
     
-    // 계측기 화면 출력
     document.getElementById("emfDisplay").innerText = finalEmf.toFixed(2) + " V";
+    document.getElementById("currentDisplay").innerText = finalCurrent.toFixed(2) + " mA";
     
-    // 7. 신선도 수치에 따른 과일 생물학적 시각 상태 제어 (CSS 필터 및 텍스트)
-    if (freshness >= 70) {
-        plant.style.filter = "hue-rotate(0deg) saturate(100%) opacity(100%)";
-        document.getElementById("statusDisplay").innerText = "세포막 상태: 무결성 유지 (이온 차단)";
-        document.getElementById("statusDisplay").style.color = "#2ecc71";
-    } 
-    else if (freshness >= 35) {
-        // 중간 단계: 서서히 변색 진행
-        var hueValue = selectedPlant == "apple" ? -30 : 20; // 과일 특성별 변색 각도 차별화
-        plant.style.filter = "hue-rotate(" + hueValue + "deg) saturate(70%) opacity(90%)";
-        document.getElementById("statusDisplay").innerText = "세포막 상태: 부분 손상 (이온 유출 중)";
-        document.getElementById("statusDisplay").style.color = "#f1c40f";
-    } 
-    else {
-        // 완전히 시든 단계: 어둡고 탁하게 변함
-        var hueValue = selectedPlant == "apple" ? -55 : 40;
-        plant.style.filter = "hue-rotate(" + hueValue + "deg) saturate(40%) opacity(70%)";
-        document.getElementById("statusDisplay").innerText = "세포막 상태: 완전히 망가짐 (와전류 최대)";
-        document.getElementById("statusDisplay").style.color = "#e74c3c";
+    var statusMsg = document.getElementById("statusMessage");
+    if (dApple < 95) {
+        statusMsg.style.color = "#2563eb";
+        statusMsg.innerText = "🔍 계측기 프로브 사과 근접 통과 중 [거리: " + Math.round(dApple) + "cm] - 내부 와전류 유도에 의한 신호 감쇄율 실시간 추적 중.";
+    } else if (dBanana < 95) {
+        statusMsg.style.color = "#d97706";
+        statusMsg.innerText = "🔍 계측기 프로브 바나나 근접 통과 중 [거리: " + Math.round(dBanana) + "cm] - 슈가스폿 부패 영역 이온 전도 임피던스 분석 중.";
+    } else {
+        statusMsg.style.color = "#475569";
+        statusMsg.innerText = "📡 공기 중 계측 중 (대조군 매질 상태) - 외부 유도 자기 필드 왜곡 감지 안 됨.";
     }
 }
 
-// 앱 최초 로드 시 초기 연산 구동
-runSimulation();
+updateVisualsAndRun();
 </script>
 
 </body>
